@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "./homepage.css";
+import { addContactToBrevo } from '../services/brevoService';
+import { addContactToBrevoFetch } from '../services/brevoServiceAlt';
+import { addContactViaNetlify } from '../services/netlifyService';
+import EnvTest from '../components/EnvTest';
 
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState({ type: "", message: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,17 +41,60 @@ export default function HomePage() {
       return;
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setStatus({ type: "error", message: "Please enter a valid email address" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setStatus({ type: "", message: "" });
+
     try {
-      // Here you would typically make an API call to your backend
-      // For now, we'll just simulate a successful signup
-      setStatus({ type: "success", message: "Thank you for joining our waitlist!" });
-      setEmail("");
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setStatus({ type: "", message: "" });
-      }, 2000);
+      console.log('Submitting email:', email);
+      
+      // Try multiple methods in sequence until one works
+      let result;
+      
+      // Method 1: Try direct fetch first
+      result = await addContactToBrevoFetch(email);
+      console.log('Method 1 result:', result);
+      
+      // If Method 1 failed due to API key issues, try Method 2
+      if (!result.success && result.error.includes('API')) {
+        console.log('Trying Method 2...');
+        result = await addContactToBrevo(email);
+        console.log('Method 2 result:', result);
+      }
+      
+      // If deployed to Netlify, try the serverless function as a last resort
+      if (!result.success && window.location.hostname.includes('netlify')) {
+        console.log('Trying Netlify function...');
+        result = await addContactViaNetlify(email);
+        console.log('Netlify function result:', result);
+      }
+      
+      if (result.success) {
+        setStatus({ type: "success", message: "Thank you for joining our waitlist!" });
+        setEmail("");
+        setTimeout(() => {
+          setIsModalOpen(false);
+          setStatus({ type: "", message: "" });
+        }, 2000);
+      } else {
+        // For development, show a more detailed error
+        const errorMsg = process.env.NODE_ENV === 'development' 
+          ? `Error: ${result.error}`
+          : "Something went wrong. Please try again.";
+        
+        setStatus({ type: "error", message: errorMsg });
+      }
     } catch (error) {
+      console.error("Error submitting form:", error);
       setStatus({ type: "error", message: "Something went wrong. Please try again." });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -86,8 +134,11 @@ export default function HomePage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={isSubmitting}
             />
-            <button type="submit">Join Waitlist</button>
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Joining..." : "Join Waitlist"}
+            </button>
             {status.message && (
               <div className={`form-${status.type}`}>
                 {status.message}
@@ -310,6 +361,9 @@ export default function HomePage() {
           </div>
         </footer>
       </div>
+
+      {/* Add the EnvTest component for development */}
+      {process.env.NODE_ENV === 'development' && <EnvTest />}
     </>
   );
 } 

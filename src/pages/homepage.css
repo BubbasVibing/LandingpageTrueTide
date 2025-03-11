@@ -976,6 +976,17 @@
     background-color: var(--primary-dark);
   }
   
+  .waitlist-form button:disabled {
+    background-color: var(--silver);
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  .waitlist-form input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
+  
   .form-success, .form-error {
     text-align: center;
     margin-top: 1rem;
