@@ -78,6 +78,11 @@ export default function HomePage() {
     <>
       <nav className={`navbar ${scrolled ? "navbar-scrolled" : ""}`}>
         <div className="logo">
+          <img 
+            src={scrolled ? "/images/TrueTide (3) (1).png" : "/images/TrueTide (3) (1)(1).png"} 
+            alt="TrueTide Logo" 
+            className="logo-image" 
+          />
           <span className={`logo-text ${scrolled ? "logo-text-scrolled" : ""}`}>
             TrueTide
           </span>
@@ -423,7 +428,11 @@ export default function HomePage() {
         <footer className="footer">
           <div className="footer-container">
             <div className="footer-logo">
-              <span className="logo-text">TrueTide</span>
+              <img 
+                src="/images/TrueTide (3) (1).png" 
+                alt="TrueTide Logo" 
+                className="footer-logo-image" 
+              />
             </div>
             <div className="footer-links">
               <div className="footer-column">
