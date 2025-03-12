@@ -13,6 +13,7 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "axios": "^1.8.2",
+    "http-proxy-middleware": "^3.0.3",
     "node-fetch": "^2.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
